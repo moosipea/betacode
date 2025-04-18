@@ -174,22 +174,27 @@
 
 #let betacode(input) = {
   if type(input) != str {
-    panic("Please use #betacode with a str, not a content")
+    panic("Please use #betacode with a str, not a content.")
   }
 
+  // Unescape input
   input = input
     .replace("\n", "\\n")
     .replace("\r", "\\r")
     .replace("\t", "\\t")
 
-  text(
-    comb.many(
-      comb.alt((
-        uppercase-with-diacritics,
-        lowercase-with-diacritics,
-        punctuation,
-        whitespace
-      ))
-    )(input).at(1)
-  )
+  let (input, parsed) = comb.many(
+    comb.alt((
+      uppercase-with-diacritics,
+      lowercase-with-diacritics,
+      punctuation,
+      whitespace
+    ))
+  )(input)
+
+  if input != "" {
+    panic("Error while parsing betacode, there might be an incomplete letter at the end of the input.")
+  }
+
+  text(parsed)
 }
