@@ -128,8 +128,6 @@
   comb.rep-res(tag("="), chars.circumflex-accent),
   comb.rep-res(tag("\\"), chars.grave-accent),
   comb.rep-res(tag("+"), chars.diaeresis),
-  comb.rep-res(tag("&"), chars.macron),
-  comb.rep-res(tag("'"), chars.breve),
   comb.rep-res(tag("?"), chars.combining-dot-below)
 ))(input)
 
