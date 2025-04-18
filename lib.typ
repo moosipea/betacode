@@ -1,11 +1,11 @@
 #import "characters.typ" as chars
 #import "combinators.typ" as comb
 
-#let tag(grapheme) = {
+#let tag(pat) = {
   input => {
-    if input.starts-with(grapheme) {
-      let parsed = input.slice(0, grapheme.len())
-      let rst = input.slice(grapheme.len())
+    if input.starts-with(pat) {
+      let parsed = input.slice(0, pat.len())
+      let rst = input.slice(pat.len())
       (rst, parsed)
     } else {
       (input, "")
@@ -13,14 +13,14 @@
   }
 }
 
-#let tag-nocase(grapheme) = {
+#let tag-nocase(pat) = {
   input => {
-    let (new_input, parsed) = tag(lower(grapheme))(input)
+    let (new_input, parsed) = tag(lower(pat))(input)
     if parsed != "" {
       return (new_input, parsed) 
     }
 
-    let (new_input, parsed) = tag(upper(grapheme))(input)
+    let (new_input, parsed) = tag(upper(pat))(input)
     if parsed != "" {
       return (new_input, parsed) 
     }
@@ -74,16 +74,16 @@
 ))(input)
 
 #let lowercase-sigma(input) = comb.alt((
+  comb.rep-res(tag-nocase("s3"), "ϲ"),
   comb.rep-res(comb.alt((
-    comb.all((tag-nocase("s"), comb.peek(end-of-word))),
     tag-nocase("s2"),
-    tag-nocase("j")
+    tag-nocase("j"),
+    comb.all((tag-nocase("s"), comb.peek(end-of-word)))
   )), "ς"),
   comb.rep-res(comb.alt((
-    tag-nocase("s"),
-    tag-nocase("s1")
-  )), "σ"),
-  comb.rep-res(tag-nocase("s3"), "ϲ")
+    tag-nocase("s1"),
+    tag-nocase("s")
+  )), "σ")
 ))(input)
 
 #let lowercase-letter(input) = comb.alt((
@@ -193,7 +193,7 @@
   )(input)
 
   if input != "" {
-    panic("Error while parsing betacode, there might be an incomplete letter at the end of the input.")
+    panic("Error while parsing betacode, there might be an incomplete letter at the end of the input: `" + input + "`")
   }
 
   text(parsed)
