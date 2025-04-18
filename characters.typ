@@ -23,6 +23,7 @@
 #let single-quote-closing = "\u{2019}"
 #let em-dash = "\u{2014}"
 #let prime = "\u{02b9}"
+#let hyphen = "\u{2010}"
 
 // Breathing
 #let smooth-breathing = "\u{0313}"
@@ -36,6 +37,7 @@
 #let iota-subscript-char = "\u{0345}" 
 #let macron = "\u{0304}"
 #let breve = "\u{0306}"
+#let combining-dot-below = "\u{0323}"
 
 // Miscellaneous
 #let end-of-text = "\u{0003}"

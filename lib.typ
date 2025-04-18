@@ -37,6 +37,7 @@
   comb.rep-res(tag("'"), chars.single-quote-closing),
   comb.rep-res(tag("_"), chars.em-dash),
   comb.rep-res(tag("#"), chars.prime),
+  comb.rep-res(tag("-"), chars.hyphen)
 ))(input)
 
 #let whitespace(input) = comb.alt((
@@ -114,6 +115,9 @@
   lowercase-sigma
 ))(input)
 
+// Breathing marks are also technically diacritics,
+// but they're treated a bit different when parsing.
+// TODO: explain why
 #let breathing(input) = comb.alt((
   comb.rep-res(tag(")"), chars.smooth-breathing),
   comb.rep-res(tag("("), chars.rough-breathing)
@@ -125,7 +129,8 @@
   comb.rep-res(tag("\\"), chars.grave-accent),
   comb.rep-res(tag("+"), chars.diaeresis),
   comb.rep-res(tag("&"), chars.macron),
-  comb.rep-res(tag("'"), chars.breve)
+  comb.rep-res(tag("'"), chars.breve),
+  comb.rep-res(tag("?"), chars.combining-dot-below)
 ))(input)
 
 #let iota-subscript(input) = comb.rep-res(
