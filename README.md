@@ -15,7 +15,7 @@ Typst code for this example:
 
 #table(columns: 2,
   [*Beta Code*]  , [*Unicode*],
-  text(apology), lib.betacode(apology)
+  text(apology), betacode.betacode(apology)
 )
 ```
 
