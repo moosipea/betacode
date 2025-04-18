@@ -3,6 +3,7 @@ name = "betacode"
 version = "0.1.0"
 entrypoint = "lib.typ"
 authors = ["moosipea"]
+license = "MIT-0"
 repository = "https://github.com/moosipea/betacode"
 exclude = ["*.pdf", "*.png"]
 description = "Convert Greek Beta Code to Unicode."
