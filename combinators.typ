@@ -64,3 +64,13 @@
     (input, results.join())
   }
 }
+
+#let cond(bool, parser) = {
+  input => {
+    if bool {
+      parser(input) 
+    } else {
+      (input, "") 
+    }
+  }
+}

@@ -37,7 +37,7 @@
   comb.rep-res(tag("'"), chars.single-quote-closing),
   comb.rep-res(tag("_"), chars.em-dash),
   comb.rep-res(tag("#"), chars.prime),
-  comb.rep-res(tag("-"), chars.hyphen)
+  comb.rep-res(tag("-"), chars.hyphen),
 ))(input)
 
 #let whitespace(input) = comb.alt((
@@ -123,21 +123,30 @@
   comb.rep-res(tag("("), chars.rough-breathing)
 ))(input)
 
-#let diacritic(input) = comb.alt((
+#let diacritic(is-consonant) = comb.alt((
   comb.rep-res(tag("/"), chars.acute-accent),
   comb.rep-res(tag("="), chars.circumflex-accent),
   comb.rep-res(tag("\\"), chars.grave-accent),
   comb.rep-res(tag("+"), chars.diaeresis),
-  comb.rep-res(tag("?"), chars.combining-dot-below)
-))(input)
+  comb.rep-res(tag("?"), chars.combining-dot-below),
+  comb.rep-res(tag("&"), chars.macron),
+  comb.cond(not is-consonant, comb.rep-res(tag("'"), chars.breve))
+))
 
 #let iota-subscript(input) = comb.rep-res(
   tag("|"),
-  chars.iota-subscript-char
+  chars.iota-subscript
 )(input)
+
+#let is-consonant(letter) = {
+  let letter = lower(letter)
+  let consonants = ("β", "γ", "δ", "ζ", "θ", "κ", "λ", "μ", "ν", "ξ", "π", "σ", "ς", "τ", "φ", "χ", "ψ")
+  consonants.contains(letter)
+}
 
 #let lowercase-with-diacritics(input) = {
   let (input, letter) = lowercase-letter(input) 
+  let is-consonant = is-consonant(letter)
 
   if letter == "" {
     return (input, "")  
@@ -145,7 +154,7 @@
 
   // These are optional
   let (input, breathing) = breathing(input)
-  let (input, accent) = comb.many(diacritic)(input)
+  let (input, accent) = comb.many(diacritic(is-consonant))(input)
   let (input, iota-subscript) = iota-subscript(input)
 
   let result = letter + breathing + accent + iota-subscript
@@ -161,7 +170,7 @@
 
   // These are optional
   let (input, breathing) = breathing(input)
-  let (input, accent) = comb.many(diacritic)(input)
+  let (input, accent) = comb.many(diacritic(false))(input)
 
   let (input, letter) = comb.map-res(lowercase-letter, upper)(input)
   if letter == "" {
@@ -175,6 +184,11 @@
   (input, result)
 }
 
+#let letter(input) = comb.alt((
+  uppercase-with-diacritics,
+  lowercase-with-diacritics,
+))(input)
+
 #let betacode(input) = {
   assert.eq(type(input), str, message: "Please use #betacode with a str, not a content.")
 
@@ -186,8 +200,7 @@
 
   let (input, parsed) = comb.many(
     comb.alt((
-      uppercase-with-diacritics,
-      lowercase-with-diacritics,
+      letter,
       punctuation,
       whitespace
     ))
