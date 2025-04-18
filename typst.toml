@@ -1,0 +1,8 @@
+[package]
+name = "betacode"
+version = "0.1.0"
+entrypoint = "lib.typ"
+authors = ["moosipea"]
+repository = "https://github.com/moosipea/betacode"
+exclude = ["*.pdf", "*.png"]
+description = "Convert Greek Beta Code to Unicode."
