@@ -19,8 +19,13 @@ Typst code for this example:
 )
 ```
 
-## Installing
+## Usage
 Import this library with
 ```typst
 #import "@preview/betacode:0.1.0"
+```
+
+Then use it like this:
+```typst
+#betacode.betacode("*(/o")
 ```
