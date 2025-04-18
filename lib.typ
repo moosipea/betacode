@@ -176,9 +176,7 @@
 }
 
 #let betacode(input) = {
-  if type(input) != str {
-    panic("Please use #betacode with a str, not a content.")
-  }
+  assert.eq(type(input), str, message: "Please use #betacode with a str, not a content.")
 
   // Unescape input
   input = input
@@ -195,9 +193,7 @@
     ))
   )(input)
 
-  if input != "" {
-    panic("Error while parsing betacode, there might be an incomplete letter at the end of the input: `" + input + "`")
-  }
+  assert.eq(input, "", message: "Error while parsing betacode, there might be an incomplete letter at the end of the input: `" + input + "`")
 
   text(parsed)
 }
