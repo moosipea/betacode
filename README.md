@@ -29,3 +29,10 @@ Then use it like this:
 ```typst
 #betacode.betacode("*(/o")
 ```
+
+Alternatively you use uppercase and lowercase letters instead of the typical asterisk syntax:
+```typst
+// These are equivalent
+#betacode.betacode("*/aqhnai=oi")
+#betacode.betacode(auto-capitalization: true, "A/qhnai=oi")
+```
