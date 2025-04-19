@@ -13,14 +13,17 @@
   }
 }
 
+#let tag-lowercase(pat) = tag(lower(pat))
+#let tag-uppercase(pat) = tag(upper(pat))
+
 #let tag-nocase(pat) = {
   input => {
-    let (new_input, parsed) = tag(lower(pat))(input)
+    let (new_input, parsed) = tag-lowercase(pat)(input)
     if parsed != "" {
       return (new_input, parsed) 
     }
 
-    let (new_input, parsed) = tag(upper(pat))(input)
+    let (new_input, parsed) = tag-uppercase(pat)(input)
     if parsed != "" {
       return (new_input, parsed) 
     }
@@ -74,46 +77,46 @@
   punctuation
 ))(input)
 
-#let lowercase-sigma(input) = comb.alt((
-  comb.rep-res(tag-nocase("s3"), "ϲ"),
+#let lowercase-sigma(tag-fn) = comb.alt((
+  comb.rep-res(tag-fn("s3"), "ϲ"),
   comb.rep-res(comb.alt((
-    tag-nocase("s2"),
-    tag-nocase("j"),
-    comb.all((tag-nocase("s"), comb.peek(end-of-word)))
+    tag-fn("s2"),
+    tag-fn("j"),
+    comb.all((tag-fn("s"), comb.peek(end-of-word)))
   )), "ς"),
   comb.rep-res(comb.alt((
-    tag-nocase("s1"),
-    tag-nocase("s")
+    tag-fn("s1"),
+    tag-fn("s")
   )), "σ")
-))(input)
+))
 
-#let lowercase-letter(input) = comb.alt((
-  comb.rep-res(tag-nocase("a"), "α"),
-  comb.rep-res(tag-nocase("b"), "β"),
-  comb.rep-res(tag-nocase("g"), "γ"),
-  comb.rep-res(tag-nocase("d"), "δ"),
-  comb.rep-res(tag-nocase("e"), "ε"),
-  comb.rep-res(tag-nocase("v"), "ϝ"),
-  comb.rep-res(tag-nocase("z"), "ζ"),
-  comb.rep-res(tag-nocase("h"), "η"),
-  comb.rep-res(tag-nocase("q"), "θ"),
-  comb.rep-res(tag-nocase("i"), "ι"),
-  comb.rep-res(tag-nocase("k"), "κ"),
-  comb.rep-res(tag-nocase("l"), "λ"),
-  comb.rep-res(tag-nocase("m"), "μ"),
-  comb.rep-res(tag-nocase("n"), "ν"),
-  comb.rep-res(tag-nocase("c"), "ξ"),
-  comb.rep-res(tag-nocase("o"), "ο"),
-  comb.rep-res(tag-nocase("p"), "π"),
-  comb.rep-res(tag-nocase("r"), "ρ"),
-  comb.rep-res(tag-nocase("t"), "τ"),
-  comb.rep-res(tag-nocase("u"), "υ"),
-  comb.rep-res(tag-nocase("f"), "φ"),
-  comb.rep-res(tag-nocase("x"), "χ"),
-  comb.rep-res(tag-nocase("y"), "ψ"),
-  comb.rep-res(tag-nocase("w"), "ω"),
-  lowercase-sigma
-))(input)
+#let lowercase-letter(tag-fn: tag-nocase) = comb.alt((
+  comb.rep-res(tag-fn("a"), "α"),
+  comb.rep-res(tag-fn("b"), "β"),
+  comb.rep-res(tag-fn("g"), "γ"),
+  comb.rep-res(tag-fn("d"), "δ"),
+  comb.rep-res(tag-fn("e"), "ε"),
+  comb.rep-res(tag-fn("v"), "ϝ"),
+  comb.rep-res(tag-fn("z"), "ζ"),
+  comb.rep-res(tag-fn("h"), "η"),
+  comb.rep-res(tag-fn("q"), "θ"),
+  comb.rep-res(tag-fn("i"), "ι"),
+  comb.rep-res(tag-fn("k"), "κ"),
+  comb.rep-res(tag-fn("l"), "λ"),
+  comb.rep-res(tag-fn("m"), "μ"),
+  comb.rep-res(tag-fn("n"), "ν"),
+  comb.rep-res(tag-fn("c"), "ξ"),
+  comb.rep-res(tag-fn("o"), "ο"),
+  comb.rep-res(tag-fn("p"), "π"),
+  comb.rep-res(tag-fn("r"), "ρ"),
+  comb.rep-res(tag-fn("t"), "τ"),
+  comb.rep-res(tag-fn("u"), "υ"),
+  comb.rep-res(tag-fn("f"), "φ"),
+  comb.rep-res(tag-fn("x"), "χ"),
+  comb.rep-res(tag-fn("y"), "ψ"),
+  comb.rep-res(tag-fn("w"), "ω"),
+  lowercase-sigma(tag-fn)
+))
 
 // Breathing marks are also technically diacritics,
 // but they're treated a bit different when parsing.
@@ -144,21 +147,24 @@
   consonants.contains(letter)
 }
 
-#let lowercase-with-diacritics(input) = {
-  let (input, letter) = lowercase-letter(input) 
-  let is-not-consonant = not is-consonant(letter)
+#let lowercase-with-diacritics(letter-parser: lowercase-letter()) = {
+  input => {
+    let (input, letter) = letter-parser(input) 
 
-  if letter == "" {
-    return (input, "")  
+    if letter == "" {
+      return (input, "")  
+    }
+
+    let is-not-consonant = not is-consonant(letter)
+
+    // These are optional
+    let (input, breathing) = comb.cond(is-not-consonant, breathing)(input)
+    let (input, accent) = comb.cond(is-not-consonant, comb.many(diacritic))(input)
+    let (input, iota-subscript) = comb.cond(is-not-consonant, iota-subscript)(input)
+
+    let result = letter + breathing + accent + iota-subscript
+    (input, result)
   }
-
-  // These are optional
-  let (input, breathing) = comb.cond(is-not-consonant, breathing)(input)
-  let (input, accent) = comb.cond(is-not-consonant, comb.many(diacritic))(input)
-  let (input, iota-subscript) = comb.cond(is-not-consonant, iota-subscript)(input)
-
-  let result = letter + breathing + accent + iota-subscript
-  (input, result)
 }
 
 #let uppercase-with-diacritics(input) = {
@@ -172,7 +178,7 @@
   let (input, breathing) = breathing(input)
   let (input, accent) = comb.many(diacritic)(input)
 
-  let (input, letter) = comb.map-res(lowercase-letter, upper)(input)
+  let (input, letter) = comb.map-res(lowercase-letter(), upper)(input)
   if letter == "" {
     return (input, "")
   }
@@ -184,12 +190,31 @@
   (input, result)
 }
 
-#let letter(input) = comb.alt((
-  uppercase-with-diacritics,
-  lowercase-with-diacritics,
-))(input)
+#let uppercase-with-auto-capitalization(input) = lowercase-with-diacritics(
+  letter-parser: comb.map-res(lowercase-letter(tag-fn: tag-uppercase), upper)
+)(input)
 
-#let betacode(input) = {
+#let lowercase-with-auto-capitalization(input) = lowercase-with-diacritics(
+  letter-parser: lowercase-letter(tag-fn: tag-lowercase)
+)(input)
+
+#let letter(auto-capitalization) = {
+  input => {
+    if auto-capitalization {
+      comb.alt((
+        uppercase-with-auto-capitalization,
+        lowercase-with-auto-capitalization
+      ))(input)
+    } else {
+      comb.alt((
+        uppercase-with-diacritics,
+        lowercase-with-diacritics(),
+      ))(input)
+    }
+  }
+}
+
+#let betacode(input, auto-capitalization: false) = {
   assert.eq(type(input), str, message: "Please use #betacode with a str, not a content.")
 
   // Unescape input
@@ -200,7 +225,7 @@
 
   let (input, parsed) = comb.many(
     comb.alt((
-      letter,
+      letter(auto-capitalization),
       punctuation,
       whitespace
     ))
