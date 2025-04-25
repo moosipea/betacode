@@ -152,10 +152,11 @@
   }
 
   let (input, breathing-or-diaeresis) = comb.alt((breathing, diaeresis))(input)
+  let (input, length) = length(input)
   let (input, accent) = accent(input)
   let (input, iota-subscript) = iota-subscript(input)
 
-  let result = letter + breathing-or-diaeresis + accent + iota-subscript
+  let result = letter + breathing-or-diaeresis + length + accent + iota-subscript
   (input, result)
 }
 
@@ -167,6 +168,7 @@
   }
 
   let (input, breathing-or-diaeresis) = comb.alt((breathing, diaeresis))(input)
+  let (input, length) = length(input)
   let (input, accent) = accent(input)
 
   let (input, letter) = comb.map-res(letter-with-diacritics, upper)(input)
@@ -176,7 +178,7 @@
 
   let (input, iota-subscript) = iota-subscript(input)
 
-  let result = letter + breathing-or-diaeresis + accent + iota-subscript
+  let result = letter + breathing-or-diaeresis + length + accent + iota-subscript
   (input, result)
 }
 
