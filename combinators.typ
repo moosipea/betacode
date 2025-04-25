@@ -26,8 +26,7 @@
       parsed.push(new_parsed)
     }
 
-    // TODO: join parsed
-    (local_input, parsed.join())
+    (local_input, parsed)
   }
 }
 
@@ -61,7 +60,7 @@
       (input, parsed) = parser(input)
     }
 
-    (input, results.join())
+    (input, results)
   }
 }
 
