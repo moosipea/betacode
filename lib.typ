@@ -91,7 +91,7 @@
 ))
 
 // TODO: replace with dictionary lookup
-#let vowel-letter = comb.alt((
+#let letter-with-diacritics = comb.alt((
   comb.rep-res(tag-nocase("a"), "α"),
   comb.rep-res(tag-nocase("e"), "ε"),
   comb.rep-res(tag-nocase("h"), "η"),
@@ -99,10 +99,11 @@
   comb.rep-res(tag-nocase("o"), "ο"),
   comb.rep-res(tag-nocase("u"), "υ"),
   comb.rep-res(tag-nocase("w"), "ω"),
+  comb.rep-res(tag-nocase("r"), "ρ"),
 ))
 
 // TODO: replace with dictionary lookup
-#let consonant-letter = comb.alt((
+#let letter-without-diacritics = comb.alt((
   comb.rep-res(tag-nocase("b"), "β"),
   comb.rep-res(tag-nocase("g"), "γ"),
   comb.rep-res(tag-nocase("d"), "δ"),
@@ -115,12 +116,11 @@
   comb.rep-res(tag-nocase("n"), "ν"),
   comb.rep-res(tag-nocase("c"), "ξ"),
   comb.rep-res(tag-nocase("p"), "π"),
-  comb.rep-res(tag-nocase("r"), "ρ"),
   comb.rep-res(tag-nocase("t"), "τ"),
   comb.rep-res(tag-nocase("f"), "φ"),
   comb.rep-res(tag-nocase("x"), "χ"),
   comb.rep-res(tag-nocase("y"), "ψ"),
-  lowercase-sigma
+  lowercase-sigma,
 ))
 
 #let breathing = comb.alt((
@@ -144,8 +144,8 @@
 
 #let iota-subscript = comb.rep-res(tag("|"), chars.iota-subscript)
 
-#let lowercase-vowel-with-diacritics(input) = {
-  let (input, letter) = vowel-letter(input) 
+#let lowercase-with-diacritics(input) = {
+  let (input, letter) = letter-with-diacritics(input) 
 
   if letter == "" {
     return (input, "")  
@@ -159,7 +159,7 @@
   (input, result)
 }
 
-#let uppercase-vowel-with-diacritics(input) = {
+#let uppercase-with-diacritics(input) = {
   let (input, asterisk) = tag("*")(input)
 
   if asterisk == "" {
@@ -169,7 +169,7 @@
   let (input, breathing-or-diaeresis) = comb.alt((breathing, diaeresis))(input)
   let (input, accent) = accent(input)
 
-  let (input, letter) = comb.map-res(vowel-letter, upper)(input)
+  let (input, letter) = comb.map-res(letter-with-diacritics, upper)(input)
   if letter == "" {
     return (input, "")
   }
@@ -180,49 +180,48 @@
   (input, result)
 }
 
-#let vowel = comb.alt((
-  uppercase-vowel-with-diacritics,
-  lowercase-vowel-with-diacritics,
-))
-
-#let uppercase-consonant(input) = {
+#let uppercase-without-diacritics(input) = {
   let (input, asterisk) = tag("*")(input)
 
   if asterisk == "" {
     return (input, "") 
   }
 
-  comb.map-res(consonant-letter, upper)(input)
+  comb.map-res(letter-without-diacritics, upper)(input)
 }
 
-#let lowercase-consonant = consonant-letter
-
-#let consonant = comb.alt((
-  uppercase-consonant,
-  lowercase-consonant
-))
+#let lowercase-without-diacritics = letter-without-diacritics
 
 #let letter = comb.alt((
-  consonant,
-  vowel
+  comb.alt((
+    uppercase-without-diacritics,
+    lowercase-without-diacritics
+  )),
+  comb.alt((
+    uppercase-with-diacritics,
+    lowercase-with-diacritics
+  ))
 ))
 
 #let betacode-lookup = json("beta_code_to_unicode.json")
 
-#let parse-characters = comb.many(comb.map-res(comb.alt((
-  letter,
-  punctuation,
-  whitespace
-)), char => {
-    if char in  betacode-lookup{
-      betacode-lookup.at(char) 
-    } else {
-      char 
-    } 
-}))
+#let parse-characters = comb.many(
+  comb.map-res(
+    comb.alt((
+      letter,
+      punctuation,
+      whitespace
+    )), char => {
+      if char in  betacode-lookup{
+        betacode-lookup.at(char) 
+      } else {
+        char 
+      } 
+    }
+  )
+)
 
-// TODO: rename to bcode?
-#let betacode(input, auto-capitalization: false) = {
+#let bcode(input) = {
   assert.eq(type(input), str, message: "Please use #betacode with a str, not content.")
 
   let lookup = json("beta_code_to_unicode.json")
@@ -236,7 +235,5 @@
   let (input, parsed) = parse-characters(input)
 
   assert.eq(input, "", message: "Error while parsing betacode, there might be an incomplete letter at the end of the input: `" + input + "`")
-
-  //text(parsed)
-  [#parsed]
+  parsed.join()
 }

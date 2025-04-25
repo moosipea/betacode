@@ -4,5 +4,5 @@
 
 #table(columns: 2,
   [*Beta Code*], [*Unicode*],
-  text(input), lib.betacode(input)
+  text(input), lib.bcode(input)
 )
