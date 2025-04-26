@@ -132,7 +132,6 @@
   comb.rep-res(tag("/"), chars.acute-accent),
   comb.rep-res(tag("="), chars.circumflex-accent),
   comb.rep-res(tag("\\"), chars.grave-accent),
-  comb.rep-res(tag("?"), chars.combining-dot-below),
 ))
 
 #let diaeresis = comb.rep-res(tag("+"), chars.diaeresis)
@@ -144,6 +143,8 @@
 
 #let iota-subscript = comb.rep-res(tag("|"), chars.iota-subscript)
 
+#let dot-below = comb.rep-res(tag("?"), chars.combining-dot-below)
+
 #let lowercase-with-diacritics(input) = {
   let (input, letter) = letter-with-diacritics(input) 
 
@@ -154,9 +155,10 @@
   let (input, breathing-or-diaeresis) = comb.alt((breathing, diaeresis))(input)
   let (input, length) = length(input)
   let (input, accent) = accent(input)
+  let (input, dot-below) = dot-below(input)
   let (input, iota-subscript) = iota-subscript(input)
 
-  let result = letter + breathing-or-diaeresis + length + accent + iota-subscript
+  let result = letter + breathing-or-diaeresis + length + accent + dot-below + iota-subscript
   (input, result)
 }
 
@@ -170,6 +172,7 @@
   let (input, breathing-or-diaeresis) = comb.alt((breathing, diaeresis))(input)
   let (input, length) = length(input)
   let (input, accent) = accent(input)
+  let (input, dot-below) = dot-below(input)
 
   let (input, letter) = comb.map-res(letter-with-diacritics, upper)(input)
   if letter == "" {
@@ -178,7 +181,7 @@
 
   let (input, iota-subscript) = iota-subscript(input)
 
-  let result = letter + breathing-or-diaeresis + length + accent + iota-subscript
+  let result = letter + breathing-or-diaeresis + length + accent + dot-below + iota-subscript
   (input, result)
 }
 
