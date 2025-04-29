@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 nom = "8.0.0"
 unicode-normalization = "0.1.24"
+wasm-minimal-protocol = "0.1.0"
