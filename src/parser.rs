@@ -1,12 +1,12 @@
 use std::error::Error;
 
 use nom::{
+    IResult, Parser,
     branch::alt,
     bytes::complete::tag,
     character::complete::multispace1,
-    combinator::{eof, opt, peek, value},
+    combinator::{eof, map, opt, peek, value},
     multi::many0,
-    IResult, Parser,
 };
 
 mod chars {
@@ -174,13 +174,13 @@ fn parse_lowercase_letter(input: &str) -> IResult<&str, String> {
 fn parse_uppercase_letter(input: &str) -> IResult<&str, String> {
     let (input, _) = tag("*")(input)?;
     let (input, other_diacritics) = OtherDiacritics::parse(input)?;
-    let (input, letter) = parse_raw_letter(input)?;
+    let (input, letter) = map(parse_raw_letter, |letter| letter.to_uppercase()).parse(input)?;
     let (input, iota_subscript) = opt(parse_iota_subscript)
         .map(Option::unwrap_or_default)
         .parse(input)?;
 
     let result = [
-        letter,
+        letter.as_str(),
         other_diacritics.breathing_or_diaeresis,
         other_diacritics.length,
         other_diacritics.accent,
@@ -232,4 +232,21 @@ pub fn parse_betacode(input: &str) -> Result<String, Box<dyn Error + '_>> {
     }
 
     Ok(accumulator)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lowercase_letter() {
+        let input = "a)/|";
+        let expected = "α\u{0313}\u{0301}\u{0345}";
+        let (rest, result) = parse_lowercase_letter(input).expect("Parser failed");
+
+        assert_eq!(result, expected);
+        assert!(rest.is_empty());
+    }
+
+
 }
