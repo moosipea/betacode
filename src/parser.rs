@@ -1,12 +1,12 @@
 use std::error::Error;
 
 use nom::{
-    IResult, Parser,
     branch::alt,
     bytes::complete::tag,
     character::complete::multispace1,
     combinator::{eof, map, opt, peek, value},
     multi::many0,
+    IResult, Parser,
 };
 
 mod chars {
@@ -248,5 +248,13 @@ mod tests {
         assert!(rest.is_empty());
     }
 
+    #[test]
+    fn uppercase_letter() {
+        let input = "*)/a|";
+        let expected = "Α\u{0313}\u{0301}\u{0345}";
+        let (rest, result) = parse_uppercase_letter(input).expect("Parser failed");
 
+        assert_eq!(result, expected);
+        assert!(rest.is_empty());
+    }
 }
