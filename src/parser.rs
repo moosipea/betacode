@@ -10,24 +10,24 @@ use nom::{
 };
 
 mod chars {
-    pub const INTERPUNCT: &'static str = "\u{00b7}";
-    pub const GREEK_QUESTION_MARK: &'static str = "\u{037e}";
-    pub const SINGLE_QUOTE_CLOSING: &'static str = "\u{2019}";
-    pub const EM_DASH: &'static str = "\u{2014}";
-    pub const PRIME: &'static str = "\u{02b9}";
-    pub const HYPHEN: &'static str = "\u{2010}";
+    pub const INTERPUNCT: &str = "\u{00b7}";
+    pub const GREEK_QUESTION_MARK: &str = "\u{037e}";
+    pub const SINGLE_QUOTE_CLOSING: &str = "\u{2019}";
+    pub const EM_DASH: &str = "\u{2014}";
+    pub const PRIME: &str = "\u{02b9}";
+    pub const HYPHEN: &str = "\u{2010}";
 
-    pub const SMOOTH_BREATHING: &'static str = "\u{0313}";
-    pub const ROUGH_BREATHING: &'static str = "\u{0314}";
+    pub const SMOOTH_BREATHING: &str = "\u{0313}";
+    pub const ROUGH_BREATHING: &str = "\u{0314}";
 
-    pub const ACUTE_ACCENT: &'static str = "\u{0301}";
-    pub const CIRCUMFLEX_ACCENT: &'static str = "\u{0342}";
-    pub const GRAVE_ACCENT: &'static str = "\u{0300}";
-    pub const DIAERESIS: &'static str = "\u{0308}";
-    pub const IOTA_SUBSCRIPT: &'static str = "\u{0345}";
-    pub const MACRON: &'static str = "\u{0304}";
-    pub const BREVE: &'static str = "\u{0306}";
-    pub const COMBINING_DOT_BELOW: &'static str = "\u{0323}";
+    pub const ACUTE_ACCENT: &str = "\u{0301}";
+    pub const CIRCUMFLEX_ACCENT: &str = "\u{0342}";
+    pub const GRAVE_ACCENT: &str = "\u{0300}";
+    pub const DIAERESIS: &str = "\u{0308}";
+    pub const IOTA_SUBSCRIPT: &str = "\u{0345}";
+    pub const MACRON: &str = "\u{0304}";
+    pub const BREVE: &str = "\u{0306}";
+    pub const COMBINING_DOT_BELOW: &str = "\u{0323}";
 
     pub const ALPHA: &str = "α";
     pub const BETA: &str = "β";
@@ -115,26 +115,26 @@ struct OtherDiacritics<'a> {
 impl OtherDiacritics<'_> {
     fn parse(input: &str) -> IResult<&str, OtherDiacritics<'_>> {
         let (input, breathing_or_diaeresis) = opt(alt((
-            tag(")").map(|_| chars::SMOOTH_BREATHING),
-            tag("(").map(|_| chars::ROUGH_BREATHING),
-            tag("+").map(|_| chars::DIAERESIS),
+            value(chars::SMOOTH_BREATHING, tag(")")),
+            value(chars::ROUGH_BREATHING, tag("(")),
+            value(chars::DIAERESIS, tag("+")),
         )))
         .parse(input)?;
 
         let (input, length) = opt(alt((
-            tag("&").map(|_| chars::MACRON),
-            tag("'").map(|_| chars::BREVE),
+            value(chars::MACRON, tag("&")),
+            value(chars::BREVE, tag("'")),
         )))
         .parse(input)?;
 
         let (input, accent) = opt(alt((
-            tag("/").map(|_| chars::ACUTE_ACCENT),
-            tag("\\").map(|_| chars::GRAVE_ACCENT),
-            tag("=").map(|_| chars::CIRCUMFLEX_ACCENT),
+            value(chars::ACUTE_ACCENT, tag("/")),
+            value(chars::GRAVE_ACCENT, tag("\\")),
+            value(chars::CIRCUMFLEX_ACCENT, tag("=")),
         )))
         .parse(input)?;
 
-        let (input, dot_below) = opt(tag("?").map(|_| chars::COMBINING_DOT_BELOW)).parse(input)?;
+        let (input, dot_below) = opt(value(chars::COMBINING_DOT_BELOW, tag("?"))).parse(input)?;
 
         IResult::Ok((
             input,
@@ -149,7 +149,7 @@ impl OtherDiacritics<'_> {
 }
 
 fn parse_iota_subscript(input: &str) -> IResult<&str, &str> {
-    tag("|").map(|_| chars::IOTA_SUBSCRIPT).parse(input)
+        value(chars::IOTA_SUBSCRIPT, tag("|")).parse(input)
 }
 
 fn may_have_diacritics(letter: &str) -> bool {
@@ -165,7 +165,7 @@ fn may_have_diacritics(letter: &str) -> bool {
         chars::CHI => true,
         chars::PSI => true,
         chars::OMEGA => true,
-        _ => false
+        _ => false,
     }
 }
 
@@ -221,12 +221,12 @@ fn parse_punctuation(input: &str) -> IResult<&str, &str> {
     alt((
         tag("."),
         tag(","),
-        tag(":").map(|_| chars::INTERPUNCT),
-        tag(";").map(|_| chars::GREEK_QUESTION_MARK),
-        tag("'").map(|_| chars::SINGLE_QUOTE_CLOSING),
-        tag("_").map(|_| chars::EM_DASH),
-        tag("#").map(|_| chars::PRIME),
-        tag("-").map(|_| chars::HYPHEN),
+        value(chars::INTERPUNCT, tag(":")),
+        value(chars::GREEK_QUESTION_MARK, tag(";")),
+        value(chars::SINGLE_QUOTE_CLOSING, tag("'")),
+        value(chars::EM_DASH, tag("_")),
+        value(chars::PRIME, tag("#")),
+        value(chars::HYPHEN, tag("-")),
     ))
     .parse(input)
 }
@@ -299,4 +299,3 @@ mod tests {
         }
     }
 }
-
