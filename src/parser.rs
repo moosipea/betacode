@@ -104,6 +104,7 @@ fn parse_raw_letter(input: &str) -> IResult<&str, &str> {
     .parse(input)
 }
 
+#[derive(Default)]
 struct OtherDiacritics<'a> {
     breathing_or_diaeresis: &'a str,
     length: &'a str,
@@ -151,9 +152,29 @@ fn parse_iota_subscript(input: &str) -> IResult<&str, &str> {
     tag("|").map(|_| chars::IOTA_SUBSCRIPT).parse(input)
 }
 
+fn may_have_diacritics(letter: &str) -> bool {
+    match letter {
+        chars::ALPHA => true,
+        chars::EPSILON => true,
+        chars::ETA => true,
+        chars::IOTA => true,
+        chars::OMICRON => true,
+        chars::RHO => true,
+        chars::UPSILON => true,
+        chars::PHI => true,
+        chars::CHI => true,
+        chars::PSI => true,
+        chars::OMEGA => true,
+        _ => false
+    }
+}
+
 fn parse_lowercase_letter(input: &str) -> IResult<&str, String> {
     let (input, letter) = parse_raw_letter(input)?;
-    let (input, other_diacritics) = OtherDiacritics::parse(input)?;
+    let (input, other_diacritics) = match may_have_diacritics(letter) {
+        true => OtherDiacritics::parse(input)?,
+        false => (input, OtherDiacritics::default()),
+    };
     let (input, iota_subscript) = opt(parse_iota_subscript)
         .map(Option::unwrap_or_default)
         .parse(input)?;
@@ -257,4 +278,25 @@ mod tests {
         assert_eq!(result, expected);
         assert!(rest.is_empty());
     }
+
+    #[test]
+    fn wikipedia_test() {
+        let test_cases = [
+            ("E)N", "ἐν"),
+            ("O(, OI(", "ὁ, οἱ"),
+            ("PRO/S", "πρός"),
+            ("TW=N", "τῶν"),
+            ("PRO\\S", "πρὸς"),
+            ("PROI+E/NAI", "προϊέναι"),
+            ("TW=|", "τῷ"),
+            ("MAXAI/RA&S", "μαχαίρᾱς"),
+            ("MA/XAIRA'", "μάχαιρᾰ"),
+        ];
+
+        for (input, expected) in test_cases {
+            let result = parse_betacode(input).expect("Parser failed");
+            assert_eq!(result, expected);
+        }
+    }
 }
+
