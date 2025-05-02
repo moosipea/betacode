@@ -1,8 +1,9 @@
 use std::error::Error;
+use unicode_normalization::UnicodeNormalization;
 
 use nom::{
     branch::alt,
-    bytes::complete::tag,
+    bytes::complete::{tag, tag_no_case},
     character::complete::multispace1,
     combinator::{eof, map, opt, peek, value},
     multi::many0,
@@ -65,40 +66,40 @@ fn parse_end_of_word(input: &str) -> IResult<&str, &str> {
 
 fn parse_sigma(input: &str) -> IResult<&str, &str> {
     alt((
-        value(chars::LUNATE_SIGMA, tag("s3")),
-        value(chars::FINAL_SIGMA, alt((tag("s2"), tag("j")))),
-        value(chars::FINAL_SIGMA, (tag("s"), peek(parse_end_of_word))),
-        value(chars::SIGMA, alt((tag("s1"), tag("s")))),
+        value(chars::LUNATE_SIGMA, tag_no_case("s3")),
+        value(chars::FINAL_SIGMA, alt((tag_no_case("s2"), tag_no_case("j")))),
+        value(chars::FINAL_SIGMA, (tag_no_case("s"), peek(parse_end_of_word))),
+        value(chars::SIGMA, alt((tag_no_case("s1"), tag_no_case("s")))),
     ))
     .parse(input)
 }
 
 fn parse_raw_letter(input: &str) -> IResult<&str, &str> {
     alt([
-        value(chars::ALPHA, tag("a")),
-        value(chars::BETA, tag("b")),
-        value(chars::GAMMA, tag("g")),
-        value(chars::DELTA, tag("d")),
-        value(chars::EPSILON, tag("e")),
-        value(chars::ZETA, tag("z")),
-        value(chars::ETA, tag("h")),
-        value(chars::THETA, tag("q")),
-        value(chars::IOTA, tag("i")),
-        value(chars::KAPPA, tag("k")),
-        value(chars::LAMBDA, tag("l")),
-        value(chars::MU, tag("m")),
-        value(chars::NU, tag("n")),
-        value(chars::XI, tag("c")),
-        value(chars::OMICRON, tag("o")),
-        value(chars::PI, tag("p")),
-        value(chars::RHO, tag("r")),
-        value(chars::TAU, tag("t")),
-        value(chars::UPSILON, tag("u")),
-        value(chars::PHI, tag("f")),
-        value(chars::CHI, tag("x")),
-        value(chars::PSI, tag("y")),
-        value(chars::OMEGA, tag("w")),
-        value(chars::DIGAMMA, tag("v")),
+        value(chars::ALPHA, tag_no_case("a")),
+        value(chars::BETA, tag_no_case("b")),
+        value(chars::GAMMA, tag_no_case("g")),
+        value(chars::DELTA, tag_no_case("d")),
+        value(chars::EPSILON, tag_no_case("e")),
+        value(chars::ZETA, tag_no_case("z")),
+        value(chars::ETA, tag_no_case("h")),
+        value(chars::THETA, tag_no_case("q")),
+        value(chars::IOTA, tag_no_case("i")),
+        value(chars::KAPPA, tag_no_case("k")),
+        value(chars::LAMBDA, tag_no_case("l")),
+        value(chars::MU, tag_no_case("m")),
+        value(chars::NU, tag_no_case("n")),
+        value(chars::XI, tag_no_case("c")),
+        value(chars::OMICRON, tag_no_case("o")),
+        value(chars::PI, tag_no_case("p")),
+        value(chars::RHO, tag_no_case("r")),
+        value(chars::TAU, tag_no_case("t")),
+        value(chars::UPSILON, tag_no_case("u")),
+        value(chars::PHI, tag_no_case("f")),
+        value(chars::CHI, tag_no_case("x")),
+        value(chars::PSI, tag_no_case("y")),
+        value(chars::OMEGA, tag_no_case("w")),
+        value(chars::DIGAMMA, tag_no_case("v")),
     ])
     .or(parse_sigma)
     .parse(input)
@@ -252,7 +253,7 @@ pub fn parse_betacode(input: &str) -> Result<String, Box<dyn Error + '_>> {
         }
     }
 
-    Ok(accumulator)
+    Ok(accumulator.nfc().collect())
 }
 
 #[cfg(test)]

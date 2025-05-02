@@ -1,4 +1,3 @@
-use unicode_normalization::UnicodeNormalization;
 use wasm_minimal_protocol::wasm_func;
 
 #[cfg(target_arch = "wasm32")]
@@ -11,6 +10,5 @@ use parser::parse_betacode;
 pub fn bcode(input: &[u8]) -> Result<Vec<u8>, String> {
     let string = std::str::from_utf8(input).map_err(|err| err.to_string())?;
     let betacode = parse_betacode(string).map_err(|err| err.to_string())?;
-    let normalized: String = betacode.nfc().collect();
-    Ok(normalized.into_bytes())
+    Ok(betacode.into_bytes())
 }
